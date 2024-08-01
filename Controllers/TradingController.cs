@@ -21,11 +21,6 @@ public static class TradingController
         dataSource.AddNewLot(lotInfo);
     }
 
-    public static int GetTotalOpenStockCount(IDataSource dataSource)
-    {
-        return dataSource.GetRemainingStockQuantity();
-    }
-
     public static SaleResult SellStocksFifo(int quantity, decimal price, IDataSource dataSource)
     {
         var totalSoldShareCost = 0m;
@@ -35,7 +30,7 @@ public static class TradingController
 
         foreach (var lot in dataSource.GetLots())
         {
-            if (lot.RemainingQuantity == 0)
+            if (remainingSharesToSell == 0)
             {
                 unsoldShareQuantity += lot.RemainingQuantity;
                 unsoldShareCost += lot.RemainingQuantity * lot.OpenPrice;
@@ -66,9 +61,9 @@ public static class TradingController
         return new SaleResult()
         {
             SoldShares = quantity,
-            SoldSharesCostBasis = totalSoldShareCost / quantity,
+            SoldSharesCostBasis = quantity == 0 ? 0 : decimal.Round(totalSoldShareCost / quantity, 2),
             SaleProfit = totalSoldShareValue - totalSoldShareCost,
-            RemainingSharesCostBasis = unsoldShareCost / unsoldShareQuantity,
+            RemainingSharesCostBasis = unsoldShareQuantity == 0 ? 0 : decimal.Round(unsoldShareCost / unsoldShareQuantity, 2),
             RemainingShares = unsoldShareQuantity
         };
     }
